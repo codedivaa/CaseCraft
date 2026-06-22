@@ -26,7 +26,7 @@ class NPC:
 
         pygame.draw.rect(
             screen,
-            (0, 100, 255),
+            (180,100,255),
             (self.x, self.y, 32, 32)
         )
 

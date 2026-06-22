@@ -27,7 +27,7 @@ class Player:
 
         pygame.draw.rect(
             screen,
-            (255,255,0),
+            (255,200,100),
             (self.x,self.y,32,32)
         )
 

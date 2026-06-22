@@ -6,9 +6,30 @@ from ui.dialogue import draw_dialogue
 from cases.case_manager import CaseManager
 
 pygame.init()
+pygame.mixer.init()
 
+town_map = pygame.image.load(
+    "assets/town.png"
+)
+pygame.mixer.music.load(
+    "assets/audio/bg_music.mp3"
+)
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play(-1)
+footstep_sound = pygame.mixer.Sound(
+    "assets/audio/footstep.mp3"
+)
+
+talk_sound = pygame.mixer.Sound(
+    "assets/audio/talk.mp3"
+)
+
+solved_sound = pygame.mixer.Sound(
+    "assets/audio/solved.mp3"
+)
 WIDTH = 1000
 HEIGHT = 700
+dialogue_timer = 0
 
 screen = pygame.display.set_mode(
     (WIDTH, HEIGHT)
@@ -79,7 +100,14 @@ while running:
 
             if event.key == pygame.K_e:
 
-                for npc in npcs:
+                if current_dialogue:
+                    current_dialogue = ""
+
+                else:
+
+
+
+                  for npc in npcs:
 
                     zone = npc.get_rect().inflate(
                         80,
@@ -91,10 +119,14 @@ while running:
                     ):
 
                         current_dialogue = (
-                            npc.name +
-                            ": " +
-                            npc.clue
+                                npc.name +
+                                ": " +
+                                npc.clue
                         )
+
+                        talk_sound.play()
+
+                        dialogue_timer = 180
 
                         if npc.clue not in clues_found:
                             clues_found.append(
@@ -119,32 +151,31 @@ while running:
                             "CASE SOLVED!"
                         )
 
+                        solved_sound.play()
+
                     else:
 
                         game_result = (
                             "WRONG SUSPECT!"
                         )
 
-                if guess == case_manager.suspect:
+    if dialogue_timer > 0:
+        dialogue_timer -= 1
 
-                    game_result = (
-                        "CASE SOLVED!"
-                    )
-
-                else:
-
-                    game_result = (
-                        "WRONG SUSPECT!"
-                    )
-
+    if dialogue_timer == 0:
+        current_dialogue = ""
     player.move()
 
     for npc in npcs:
         npc.update()
 
-    screen.fill(
-        (40,120,40)
-    )
+    for x in range(0, WIDTH, 32):
+        for y in range(0, HEIGHT, 32):
+            pygame.draw.rect(
+                screen,
+                (60, 170, 60),
+                (x, y, 32, 32)
+            )
 
     title = font.render(
         "Case: Museum Theft",
@@ -152,9 +183,34 @@ while running:
         (255,255,255)
     )
 
+    scaled_map = pygame.transform.scale(
+        town_map,
+        (WIDTH, HEIGHT)
+    )
+
     screen.blit(
-        title,
-        (20,20)
+        scaled_map,
+        (0, 0)
+    )
+    pygame.draw.rect(
+        screen,
+        (120, 120, 120),
+        (0, 300, 1000, 80)
+    )
+    pygame.draw.rect(
+        screen,
+        (80, 80, 80),
+        (50, 100, 180, 120)
+    )
+    police_text = font.render(
+        "POLICE",
+        True,
+        (255, 255, 255)
+    )
+
+    screen.blit(
+        police_text,
+        (80, 140)
     )
     instructions = font.render(
         "WASD Move | E Talk | SPACE Solve",
