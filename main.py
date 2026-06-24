@@ -49,40 +49,40 @@ font = pygame.font.SysFont(
 player = Player()
 
 case_manager = CaseManager()
-
+clue_data = case_manager.generate_clues()
 npcs = [
 
     NPC(
         300,
         300,
         "Bob",
-        "I saw a red car outside."
+        clue_data["Bob"]
     ),
 
     NPC(
         600,
         250,
         "Sarah",
-        "The museum alarm was off."
+        clue_data["Sarah"]
     ),
 
     NPC(
         200,
         500,
         "Guard",
-        "A man in black entered."
+        clue_data["Guard"]
     ),
 
     NPC(
         700,
         500,
         "Owner",
-        "The painting is priceless."
+        clue_data["Owner"]
     )
 ]
 
 current_dialogue = ""
-
+selected_suspect = ""
 clues_found = []
 
 game_result = ""
@@ -98,16 +98,10 @@ while running:
 
         if event.type == pygame.KEYDOWN:
 
+            # Talk to NPCs
             if event.key == pygame.K_e:
 
-                if current_dialogue:
-                    current_dialogue = ""
-
-                else:
-
-
-
-                  for npc in npcs:
+                for npc in npcs:
 
                     zone = npc.get_rect().inflate(
                         80,
@@ -115,7 +109,7 @@ while running:
                     )
 
                     if player.get_rect().colliderect(
-                        zone
+                            zone
                     ):
 
                         current_dialogue = (
@@ -124,40 +118,44 @@ while running:
                                 npc.clue
                         )
 
-                        talk_sound.play()
-
-                        dialogue_timer = 180
-
                         if npc.clue not in clues_found:
                             clues_found.append(
                                 npc.clue
                             )
 
+            # Select suspect
+            if event.key == pygame.K_1:
+                selected_suspect = "Bob"
+
+            if event.key == pygame.K_2:
+                selected_suspect = "Sarah"
+
+            if event.key == pygame.K_3:
+                selected_suspect = "Guard"
+
+            if event.key == pygame.K_4:
+                selected_suspect = "Owner"
+
+            # Accuse suspect
             if event.key == pygame.K_SPACE:
 
-                if len(clues_found) < 3:
+                if selected_suspect == "":
 
                     game_result = (
-                        "Need more clues!"
+                        "Select a suspect first!"
+                    )
+
+                elif selected_suspect == case_manager.suspect:
+
+                    game_result = (
+                        f"CASE SOLVED! {selected_suspect} did it!"
                     )
 
                 else:
 
-                    guess = "Guard"
-
-                    if guess == case_manager.suspect:
-
-                        game_result = (
-                            "CASE SOLVED!"
-                        )
-
-                        solved_sound.play()
-
-                    else:
-
-                        game_result = (
-                            "WRONG SUSPECT!"
-                        )
+                    game_result = (
+                        f"Wrong! {selected_suspect} is innocent."
+                    )
 
     if dialogue_timer > 0:
         dialogue_timer -= 1
@@ -182,7 +180,16 @@ while running:
         True,
         (255,255,255)
     )
+    suspect_text = font.render(
+        f"Selected: {selected_suspect}",
+        True,
+        (255, 255, 0)
+    )
 
+    screen.blit(
+        suspect_text,
+        (20, 60)
+    )
     scaled_map = pygame.transform.scale(
         town_map,
         (WIDTH, HEIGHT)
